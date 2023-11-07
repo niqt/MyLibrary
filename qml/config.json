@@ -1,0 +1,8 @@
+{
+    "title": "MyBooks",
+    "identifier": "com.notdefine.wizardEVAP.MyBooks",
+    "orientation": "auto",
+    "versioncode": 1,
+    "versionname": "1.0.0",
+    "stage": "test"
+}
