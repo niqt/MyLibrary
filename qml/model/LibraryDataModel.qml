@@ -77,6 +77,7 @@ Item {
         // action 3 - storeTodo
         onStoreBook: book => {
                          // store with api
+                         console.log(JSON.stringify(book))
                          _.books.push(book)
                          booksChanged()
                          bookStored(book)

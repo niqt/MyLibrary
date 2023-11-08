@@ -53,6 +53,7 @@ Item {
 
     function getGoogleBooksByISBN(isbn, success, error) {
         var url = _.googleBooksUrl + "?q=isbn:" + isbn
+        console.log(url)
         _.fetch(url, success, error)
     }
 }

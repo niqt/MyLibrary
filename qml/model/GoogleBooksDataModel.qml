@@ -28,16 +28,20 @@ Item {
 
                         function(data) {
                             var books = []
-                            for(var i = 0; i < data.items.length; i++) {
-                                var book = googleBookToBook(data.items[i])
-                                books.push(book)
-                                console.log(JSON.stringify(book))
+                            console.log("DATA",JSON.stringify(data))
+                            if (data.totalItems > 0) {
+                                for(var i = 0; i < data.items.length; i++) {
+                                    var book = googleBookToBook(data.items[i])
+                                    books.push(book)
+                                    console.log(JSON.stringify(book))
+                                }
                             }
                             _.gBooks = books
+                            gBooksChanged()
                         },
                         function(error) {
                             // action failed if no cached data
-                            console.log(error)
+                            console.log("ERR" + error)
                             fetchBooksFailed(error)
                         })
         }

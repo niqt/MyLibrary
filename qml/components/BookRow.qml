@@ -54,7 +54,7 @@ Item {
                 AppText {
                     text: title
                     wrapMode: Text.WordWrap
-                    width: dp(200)
+                    Layout.fillWidth: true
                 }
                 AppText {
                     text: "of: " + item.authors
