@@ -7,17 +7,21 @@ AppPage {
     id: loginPage
     title: qsTr("Login")
 
-    backgroundColor: Qt.rgba(0,0,0, 0.75) // page background is translucent, we can see other items beneath the page
+    //backgroundColor: Qt.rgba(0,0,0, 0.75) // page background is translucent, we can see other items beneath the page
     useSafeArea: false // do not consider safe area insets of screen
-    property bool allFieldsValid: usernameField.isInputCorrect && passwordField.isInputCorrect && repeatPasswordField.isInputCorrect && termsOfServiceCheck.checked
+    BackgroundImage {
+        source: Qt.resolvedUrl("../../assets/eugenio.jpg")
+    }
+
     // login form background
     Rectangle {
         id: loginForm
         anchors.centerIn: parent
-        color: "white"
+        color: "black"
         width: content.width + dp(48)
         height: content.height + dp(16)
         radius: dp(4)
+        opacity: 0.5
     }
 
     // login form content
@@ -27,7 +31,6 @@ AppPage {
         columnSpacing: dp(20)
         rowSpacing: dp(10)
         columns: 2
-
         // headline
         AppText {
             Layout.topMargin: dp(8)
@@ -35,12 +38,14 @@ AppPage {
             Layout.columnSpan: 2
             Layout.alignment: Qt.AlignHCenter
             text: "Login"
+            color: "white"
         }
 
         // email text and field
         AppText {
             text: qsTr("E-mail")
             font.pixelSize: sp(12)
+            color: "white"
         }
 
         AppTextField {
@@ -50,12 +55,14 @@ AppPage {
             font.pixelSize: sp(14)
             borderColor: Theme.tintColor
             borderWidth: !Theme.isAndroid ? dp(2) : 0
+            color: Theme.isAndroid ? "white": "black"
         }
 
         // password text and field
         AppText {
             text: qsTr("Password")
             font.pixelSize: sp(12)
+            color: "white"
         }
 
         AppTextField {
@@ -66,6 +73,7 @@ AppPage {
             borderColor: Theme.tintColor
             borderWidth: !Theme.isAndroid ? dp(2) : 0
             echoMode: TextInput.Password
+            color: Theme.isAndroid ? "white": "black"
         }
 
         // column for buttons, we use column here to avoid additional spacing between buttons
@@ -81,8 +89,6 @@ AppPage {
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: {
                     loginPage.forceActiveFocus() // move focus away from text fields
-
-                    // call login action
                     logic.login(txtUsername.text, txtPassword.text)
                 }
             }
@@ -91,89 +97,30 @@ AppPage {
                 text: qsTr("No account yet? Register now")
                 flat: true
                 anchors.horizontalCenter: parent.horizontalCenter
+                textColor: "white"
                 onClicked: {
                     loginPage.forceActiveFocus() // move focus away from text fields
-
-                    // call your logic action to register here
-                    modal.open()
+                    modalRegistration.open()
                 }
             }
         }
     }
-    AppModal {
-        id: modal
-        // Set your main content root item
-        pushBackContent: navigationStack
-        NavigationStack {
-            AppPage {
-                // login form content
-                ColumnLayout {
-                    id: col
-                    width: parent.width
-                    spacing: 5
+    ModalRegistration {
+        id: modalRegistration
+        onRegister: function(email, password) {
+            logic.registration(email, password)
+        }
+    }
 
-                    ValidatedField {
-                        id: usernameField
-                        Layout.fillWidth: true
-                        label: qsTr("Username")
-                        placeholderText: qsTr("Enter yours email address")
-                        Layout.leftMargin: dp(50)
-                        Layout.rightMargin: dp(50)
-                        textField.text: ""
-                        textField.inputMode: textField.inputModeEmail
-                        textField.onActiveFocusChanged: {
-                            hasError = !textField.activeFocus && !textField.acceptableInput
-                        }
-
-                        errorMessage: qsTr("The email address is not valid")
-                    }
-                    ValidatedField {
-                        id: passwordField
-                        property bool isPasswordTooShort: textField.text.length > 0 && textField.text.length < 6
-                        Layout.fillWidth: true
-                        label: qsTr("Password")
-                        placeholderText: qsTr("Insert a password")
-                        Layout.leftMargin: dp(50)
-                        Layout.rightMargin: dp(50)
-                        textField.text: ""
-                        textField.inputMode: textField.inputModePassword
-                        hasError: isPasswordTooShort
-                        errorMessage: qsTr("Password is too short")
-                    }
-                    ValidatedField {
-                        id: repeatPasswordField
-                        property bool arePasswordsDifferent: passwordField.textField.text !== repeatPasswordField.textField.text
-                        Layout.fillWidth: true
-                        label: qsTr("Repeat Password")
-                        placeholderText: qsTr("Insert a password")
-                        Layout.leftMargin: dp(50)
-                        Layout.rightMargin: dp(50)
-                        textField.text: ""
-                        textField.inputMode: textField.inputModePassword
-                        hasError: arePasswordsDifferent
-                        errorMessage: qsTr("Passwords do not match")
-                    }
-                    AppCheckBox {
-                        id: termsOfServiceCheck
-                        width: parent.width
-                        text: qsTr("I agree to terms of service")
-                    }
-
-                    AppText {
-                        text: qsTr("Read our <a href=\"https://www.consilium.europa.eu/en/policies/data-protection/data-protection-regulation//\">privacy policy</a>")
-                        onLinkActivated: link => nativeUtils.openUrl(link)
-                    }
-
-                    // the submit button is only enabled if every field is valid and without error.
-                    AppButton {
-                        text: qsTr("Register")
-                        enabled: allFieldsValid
-                        onClicked: {
-
-                        }
-                    }
-                }
-            }
+    Connections {
+        target: userDataModel
+        enabled: loginPage.visible
+        onRegistration: {
+            NativeUtils.displayAlertDialog(qsTr("Registration"), qsTr("Registered! Don't forget the password at the moment it's impossible to reset\nPlease sign-in"))
+            modalRegistration.close()
+        }
+        onRegistrationFailed: {
+            NativeUtils.displayAlertDialog(qsTr("Registration"), qsTr("NOT Registered! Please retry later"))
         }
     }
 }

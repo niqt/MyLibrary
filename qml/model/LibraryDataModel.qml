@@ -28,19 +28,23 @@ Item {
     Connections {
         id: logicConnection
 
-        // action 1 - fetchTodos
-        onFetchBooks: {
+        onFetchBooks: search => {
             // check cached value first
             var cached = cache.getValue("books")
             if(cached)
                 _.books = cached
 
             // load from api
-            api.getBooks(
+            api.getBooks(search,
                         function(data) {
                             // cache data before updating model property
                             cache.setValue("books",data)
-                            _.books = data
+                            var objectData = JSON.parse(data)
+                            var books = []
+                            if (objectData.total > 0)
+                                books = objectData.books
+                            _.books = books
+                            booksChanged()
                         },
                         function(error) {
                             // action failed if no cached data
@@ -49,9 +53,7 @@ Item {
                         })
         }
 
-        // action 2 - fetchTodoDetails
         onFetchBookDetails: id => {
-                                // check cached todo details first
                                 var cached = cache.getValue("book_"+id)
                                 if(cached) {
                                     _.bookDetails[id] = cached
@@ -69,42 +71,26 @@ Item {
                                                 function(error) {
                                                     // action failed if no cached data
                                                     if(!cached) {
-                                                        bookTodoDetailsFailed(id, error)
+                                                        bookDetailsFailed(id, error)
                                                     }
                                                 })
                             }
 
-        // action 3 - storeTodo
         onStoreBook: book => {
-                         // store with api
-                         console.log(JSON.stringify(book))
-                         _.books.push(book)
-                         booksChanged()
-                         bookStored(book)
-                         /*api.addBook(book,
+                         // save remote
+                         api.addBook(book,
                                      function(data) {
-                                         // NOTE: Dummy REST API always returns 201 as id of new todo
-                                         // To simulate a new todo, we set correct local id based on current model
-                                         data.id = _.books.length + 1
-
-                                         // cache newly added item details
-                                         cache.setValue("book_"+ data.id, data)
-
-                                         // add new item to todos
-                                         _.books.unshift(data)
-
-                                         // cache updated todo list
-                                         cache.setValue("books", _.todos)
-                                         booksChanged()
-
-                                         bookStored(data)
+                                         var objData = JSON.parse(data)
+                                         if (objData.total === 1) {
+                                             var book = objData.books[0]
+                                             bookStored(data)
+                                         }
                                      },
                                      function(error) {
                                          storeBookFailed(book, error)
-                                     })*/
+                                     })
                      }
 
-        // action 4 - clearCache
         onClearCache: {
             cache.clearAll()
         }

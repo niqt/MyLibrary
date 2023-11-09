@@ -7,7 +7,7 @@ AppPage {
 
     AppButton {
         anchors.centerIn: parent
-        text: qsTr("Logout")
-        onClicked: logoutClicked()
+        text: qsTr("Logout user:") + userStorage.getValue("email")
+        onClicked: logic.logout()
     }
 }

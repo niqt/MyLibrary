@@ -5,17 +5,15 @@ import "../components"
 
 /*
 
-  ricerca
   profilo
-  undo
     back-end
   */
 
 
 ListPage {
     id: booksPage
-    showSearch: true
-    property var selecetedBook: ({})
+    //showSearch: true
+    property var selectedBook: ({})
     property int selectedIndex: -1;
     listView.visible: true
     rightBarItem: NavigationBarRow {
@@ -70,18 +68,22 @@ ListPage {
             iconType: IconType.comment
             height: bookRow.height
             onClicked: {
-                booksPage.selecetedBook = modelData
+                booksPage.selectedBook = modelData
                 booksPage.selectedIndex = index
-                modalNote.open(modelData.note)
+                modalNote.open(modelData.note || "")
                 container.hideOptions()         //hide automatically when button clicked
             }
         }
     }
-
-    // TODO
-    onSearch: term => {
-
-              }
+    listView.header: Component {
+        SearchBar {
+            onEditingFinished: text => {
+                logic.fetchBooks(text)
+            }
+            showDivider: true
+            placeHolderText: qsTr("Search by Title, Author, ISBN13")
+        }
+    }
 
     ModalMenu {
         id: modal
@@ -107,10 +109,10 @@ ListPage {
         id: modalNote
         pushBackContent: navigationStack
         onSave: text => {
-                    selecetedBook.note = text
-                    libraryDataModel.books[selectedIndex] = selecetedBook
+                    selectedBook.note = text
+                    libraryDataModel.books[selectedIndex] = selectedBook
                     libraryDataModel.booksChanged()
-                    // TODO SAVE BOOK
+                    logic.storeBook(selectedBook)
                 }
     }
 
@@ -130,12 +132,13 @@ ListPage {
     LibraryDataModel {
         id: libraryDataModel
         dispatcher: logic
-
-    }
-
-    Connections {
-        enabled: booksPage.visible
-        target: libraryDataModel
+        onFetchBooksFailed:       error       => NativeUtils.displayMessageBox("Unable to load books", error, 1)
+        onFetchBookDetailsFailed: (error) => NativeUtils.displayMessageBox("Unable to load book " + error, 1)
+        onStoreBookFailed:      (error) => NativeUtils.displayMessageBox("Failed to store ", 1)
+        onBookStored: book => {
+                          navigationStack.popAllExceptFirst()
+                          logic.fetchBooks("")
+                      }
     }
 
     Component {

@@ -64,7 +64,7 @@ Item {
                             cursorInViewBottomPadding: dp(25)
                             cursorInViewTopPadding: dp(25)
                             flickable: flick
-
+                            placeholderText: qsTr("Write your note")
                             text: ""
                             onTextChanged: text => {
                                                item.textChanged = true

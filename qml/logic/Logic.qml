@@ -3,7 +3,7 @@ import QtQuick
 Item {
 
     // actions
-    signal fetchBooks()
+    signal fetchBooks(string search)
 
     signal fetchBookDetails(int id)
 
@@ -15,7 +15,9 @@ Item {
 
     signal fetchBookFromGoogle(string isbn)
 
-    signal login(string username, string password)
+    signal login(string email, string password)
+
+    signal registration(string email, string password)
 
     signal logout()
 

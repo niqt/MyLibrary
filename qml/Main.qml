@@ -21,10 +21,10 @@ App {
         if(isOnline) {
             logic.clearCache()
         }
+        //userStorage.clearAll()
 
-        // fetch todo list data
-        //logic.fetchBooks()
-        //logic.fetchDraftBooks()
+        if (userStorage.getValue("logged") === true)
+            logic.fetchBooks("")
     }
 
     // business logic
@@ -32,16 +32,19 @@ App {
         id: logic
     }
 
-    // model
-    DataModel {
-        id: dataModel
-        dispatcher: logic // data model handles actions sent by logic
+    UserDataModel {
+        id: userDataModel
+        dispatcher: logic
+        onLogged: {
+            logic.fetchBooks("")
+        }
+        onLoginFailed: {
+             NativeUtils.displayAlertDialog(qsTr("Login"), qsTr("Check the credentials"), qsTr("OK"))
+        }
 
-        // global error handling
-        onFetchBooksFailed:       error       => NativeUtils.displayMessageBox("Unable to load todos", error, 1)
-        onFetchBookDetailsFailed: (id, error) => NativeUtils.displayMessageBox("Unable to load todo " + id, error, 1)
-        onStoreBookFailed:      (todo, error) => NativeUtils.displayMessageBox("Failed to store " + viewHelper.formatTitle(todo))
     }
+
+
 
     // helper functions for view
     ViewHelper {
@@ -54,7 +57,7 @@ App {
 
         // only enable if user is logged in
         // login page below overlays navigation then
-        enabled: dataModel.userLoggedIn
+        enabled: userDataModel.userLoggedIn
 
         // first tab
         NavigationItem {
@@ -91,9 +94,14 @@ App {
     LoginPage {
         visible: opacity > 0
         enabled: visible
-        opacity: dataModel.userLoggedIn ? 0 : 1 // hide if user is logged in
+        opacity: userDataModel.userLoggedIn ? 0 : 1 // hide if user is logged in
 
         Behavior on opacity { NumberAnimation { duration: 250 } } // page fade in/out
+    }
+
+    Storage {
+        id: userStorage
+        databaseName: "userStorage"
     }
 
 }

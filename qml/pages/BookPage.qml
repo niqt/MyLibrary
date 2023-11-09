@@ -12,7 +12,7 @@ AppPage {
     rightBarItem: NavigationBarRow {
         // network activity indicator
         ActivityIndicatorBarItem {
-            enabled: dataModel.isBusy
+            enabled: libraryDataModel.isBusy
             visible: enabled
             showItem: showItemAlways // do not collapse into sub-menu on Android
         }
@@ -136,11 +136,5 @@ AppPage {
                 textField.text: book.note || ""
             }
         }
-    }
-    Connections {
-        target: libraryDataModel
-        onBookStored: book => {
-                          navigationStack.popAllExceptFirst()
-                      }
     }
 }

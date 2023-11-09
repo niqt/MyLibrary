@@ -20,7 +20,6 @@ Item {
     Connections {
         id: logicConnection
 
-        // action 1 - fetchTodos
         onFetchBookFromGoogle: isbn => {
             // load from api
 
@@ -28,12 +27,10 @@ Item {
 
                         function(data) {
                             var books = []
-                            console.log("DATA",JSON.stringify(data))
                             if (data.totalItems > 0) {
                                 for(var i = 0; i < data.items.length; i++) {
                                     var book = googleBookToBook(data.items[i])
                                     books.push(book)
-                                    console.log(JSON.stringify(book))
                                 }
                             }
                             _.gBooks = books
@@ -41,7 +38,6 @@ Item {
                         },
                         function(error) {
                             // action failed if no cached data
-                            console.log("ERR" + error)
                             fetchBooksFailed(error)
                         })
         }

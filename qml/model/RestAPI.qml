@@ -26,6 +26,7 @@ Item {
 
         function fetch(url, success, error) {
             HttpRequest.get(url)
+            .set("Authorization", "Token " + userStorage.getValue("token"))
             .timeout(maxRequestTimeout)
             .then(function(res) { success(res.body) })
             .catch(function(err) { error(err) });
@@ -33,6 +34,7 @@ Item {
 
         function post(url, data, success, error) {
             HttpRequest.post(url)
+            .set("Authorization", "Token " + userStorage.getValue("token"))
             .timeout(maxRequestTimeout)
             .set('Content-Type', 'application/json')
             .send(data)
@@ -43,20 +45,28 @@ Item {
 
     // public rest api functions
 
-    function getBooks(success, error) {
-        _.fetch(_.booksUrl, success, error)
+    function getBooks(search, success, error) {
+        _.fetch(_.booksUrl + "?search=" + search, success, error)
     }
 
     function getBooksById(id, success, error) {
         _.fetch(_.booksUrl+"/"+id, success, error)
     }
 
-    function addBook(todo, success, error) {
-        _.post(_.booksUrl, todo, success, error)
+    function addBook(book, success, error) {
+        _.post(_.booksUrl, book, success, error)
     }
 
     function getGoogleBooksByISBN(isbn, success, error) {
         var url = _.googleBooksUrl + "?q=isbn:" + isbn
         _.fetch(url, success, error)
+    }
+
+    function registration(email, password, success, error) {
+        _.post(_.userCreationUrl, {"email": email, "password": password}, success, error )
+    }
+
+    function login(email, password, success, error) {
+        _.post(_.userLoginUrl, {"email": email, "password": password}, success, error )
     }
 }
