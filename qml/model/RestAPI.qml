@@ -18,8 +18,12 @@ Item {
     // private
     QtObject {
         id: _
-        property string booksUrl: "https://jsonplaceholder.typicode.com/todos"
+        property string myBookServer: "http://192.168.0.172:8080/api/v1"
+        property string booksUrl: myBookServer + "/books"
+        property string userCreationUrl: myBookServer + "/user"
+        property string userLoginUrl: myBookServer + "/user/login"
         property string googleBooksUrl: "https://www.googleapis.com/books/v1/volumes"
+
         function fetch(url, success, error) {
             HttpRequest.get(url)
             .timeout(maxRequestTimeout)
@@ -53,7 +57,6 @@ Item {
 
     function getGoogleBooksByISBN(isbn, success, error) {
         var url = _.googleBooksUrl + "?q=isbn:" + isbn
-        console.log(url)
         _.fetch(url, success, error)
     }
 }
