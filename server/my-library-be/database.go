@@ -5,6 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/net/context"
+	"os"
 )
 
 var booksDb *mongo.Database
@@ -18,16 +19,28 @@ const (
 	BooksCollection = "books"
 	UserCollection  = "users"
 	DBName          = "library"
+	mongoKey        = "LIBRARY_MONGO"
 )
 
 // Initialize the database
+
 func init() {
+	mongoServer := os.Getenv(mongoKey)
+	if mongoServer == "" {
+		mongoServer = "localhost"
+	}
 	ctx = context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	ctx = context.WithValue(ctx, hostKey, "127.0.0.1")
+	ctx = context.WithValue(ctx, hostKey, mongoServer)
 
-	booksDb, _ = configDB(ctx)
+	var err error
+	booksDb, err = configDB(ctx)
+
+	if err != nil {
+		fmt.Printf("db configuration %s\n", err)
+	}
+	fmt.Printf("db connected ")
 }
 
 // Configure the database

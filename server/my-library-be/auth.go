@@ -12,7 +12,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		notAuth := []string{"/api/v1/user", "/api/v1/users/login"} //List of endpoints that doesn't require auth
+		notAuth := []string{"/api/v1/user", "/api/v1/user/login"} //List of endpoints that doesn't require auth
 
 		requestPath := r.URL.Path //current request path
 
@@ -50,11 +50,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		}
 
 		if !token.Valid { //Token is invalid, maybe not signed on this server
-			w.WriteHeader(http.StatusForbidden)
-			return
-		}
-
-		if UserExists(tk.Username) != nil { //Token is invalid, maybe not signed on this server
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}

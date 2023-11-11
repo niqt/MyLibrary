@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
 
 func main() {
+	fmt.Printf("*** Server starting ***\n")
 	router := mux.NewRouter()
 	router.HandleFunc("/api/v1/books", GetBooksEndpoint).Methods("GET") // ?search=""
 	router.HandleFunc("/api/v1/books/{id}", GetBookByIdEndpoint).Methods("GET")

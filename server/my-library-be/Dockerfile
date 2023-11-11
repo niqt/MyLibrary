@@ -15,5 +15,7 @@ COPY --from=builder /root/my-library/bin/ .
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.8.0/wait wait
 RUN chmod +x wait
 
+ENV LIBRARY_MONGO=mongodb
+
 EXPOSE 8080
 CMD ./wait && ./my-library
