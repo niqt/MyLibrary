@@ -3,16 +3,35 @@ import Felgo 4.0
 
 Column {
     id: root
+
+    // this property contains the size for the error text message
     property real secondaryTextSize: sp(12)
+
+    // this property define the criteria for the correct input
     property bool isInputCorrect: textInput.acceptableInput && !hasError && textInput.text.length > 0
+
+    // this property is true if the textfield contains a not valid value
     property bool hasError: false
+
+    // The error message
     property string errorMessage: qsTr("Error")
 
+    // the reference to the text label
     property alias label: label.text
+
+    // the reference to the textfield
     property alias textField: textInput
+
+    // the reference to the placeholder of the textfield
     property alias placeholderText: textInput.placeholderText
+
+    // the reference to the validator of the textfield
     property alias validator: textInput.validator
+
+    // the maximum length of the textfield
     property alias maximumLength: textInput.maximumLength
+
+    // the wrap mode for the text field
     property alias wrapMode: textInput.wrapMode
 
     QtObject {

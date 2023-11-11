@@ -20,6 +20,7 @@ const (
 	DBName          = "library"
 )
 
+// Initialize the database
 func init() {
 	ctx = context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -29,6 +30,7 @@ func init() {
 	booksDb, _ = configDB(ctx)
 }
 
+// Configure the database
 func configDB(ctx context.Context) (*mongo.Database, error) {
 	uri := fmt.Sprintf(`mongodb://%s`,
 		ctx.Value(hostKey),
@@ -42,10 +44,12 @@ func configDB(ctx context.Context) (*mongo.Database, error) {
 	return db, nil
 }
 
+// return the reference to the database
 func GetDB() *mongo.Database {
 	return booksDb
 }
 
+// return the context
 func GetCtx() context.Context {
 	return ctx
 }

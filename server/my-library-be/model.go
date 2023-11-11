@@ -11,13 +11,10 @@ import (
 	"os"
 )
 
-func UserExists(email string) error {
-	return nil
-}
-
+// save the book
 func SaveBook(book Book) Response {
 
-	if book.ID.IsZero() {
+	if book.ID.IsZero() { // if it's new
 		result, err := GetDB().Collection(BooksCollection).InsertOne(
 			context.Background(), book)
 
@@ -38,7 +35,7 @@ func SaveBook(book Book) Response {
 			ErrorMsg: "",
 			Total:    1,
 		}
-	} else {
+	} else { // if it's an update
 		_, err := GetDB().Collection(BooksCollection).ReplaceOne(context.Background(), bson.M{"_id": book.ID}, book)
 		if err != nil {
 			return Response{
@@ -55,29 +52,32 @@ func SaveBook(book Book) Response {
 			Total:    1,
 		}
 	}
-
 }
 
-func GetBooks(query string) Response {
-	filter := bson.D{}
+// get the books by the query and user
+func GetBooks(query, email string) Response {
+	filter := bson.D{{"user", email}} // default query, if it's empty all the books for the user
 
-	if len(query) > 0 {
-		filter = bson.D{{"$or",
-			bson.A{
-				bson.D{{Key: "title", Value: bson.M{"$regex": ".*" + query + ".*", "$options": "i"}}},
-				bson.D{{Key: "isbn13", Value: bson.M{"$regex": ".*" + query + ".*", "$options": "i"}}},
-				bson.D{{Key: "authors", Value: bson.M{"$regex": ".*" + query + ".*", "$options": "i"}}},
-			}}}
+	if len(query) > 0 { // if some text is specfied
+		filter = bson.D{{"$and",
+			bson.A{bson.D{{Key: "user", Value: email}},
+				bson.D{{"$or",
+					bson.A{
+						bson.D{{Key: "title", Value: bson.M{"$regex": ".*" + query + ".*", "$options": "i"}}},
+						bson.D{{Key: "isbn13", Value: bson.M{"$regex": ".*" + query + ".*", "$options": "i"}}},
+						bson.D{{Key: "authors", Value: bson.M{"$regex": ".*" + query + ".*", "$options": "i"}}},
+					}}}},
+		}}
 	}
 	cur, err := GetDB().Collection(BooksCollection).Find(ctx, filter)
 
-	if err != nil {
+	if err != nil { // error getting the books
 		return Response{
 			Books:    []Book{},
 			ErrorMsg: err.Error(),
 			Total:    0,
 		}
-	} else {
+	} else { // get all the book
 		var books []Book
 		for cur.Next(ctx) {
 			bookFromMongo := Book{}
@@ -95,6 +95,7 @@ func GetBooks(query string) Response {
 	}
 }
 
+// get the book by id
 func GetBookById(id string) Response {
 	var book Book
 	if len(id) == 0 {
@@ -106,7 +107,7 @@ func GetBookById(id string) Response {
 	}
 	objID, err := primitive.ObjectIDFromHex(id)
 
-	if err != nil {
+	if err != nil { // wrong id
 		return Response{
 			Books:    []Book{},
 			ErrorMsg: err.Error(),
@@ -116,7 +117,7 @@ func GetBookById(id string) Response {
 
 	err = GetDB().Collection(BooksCollection).FindOne(ctx, bson.M{"_id": objID}).Decode(&book)
 
-	if err != nil {
+	if err != nil { // error getting the book
 		return Response{
 			Books:    []Book{},
 			ErrorMsg: err.Error(),
@@ -133,8 +134,22 @@ func GetBookById(id string) Response {
 	}
 }
 
-func CreateUser(account User) (map[string]User, error) {
+// delete the book by id
+func DeleteBookById(id string) error {
+	if len(id) == 0 {
+		return errors.New("wrong id")
+	}
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return errors.New("wrong id")
+	}
+	_, err = GetDB().Collection(BooksCollection).DeleteOne(context.TODO(), bson.D{{"_id", objID}})
+	return err
+}
 
+// create the user
+func CreateUser(account User) (map[string]User, error) {
+	// hash the password
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(account.Password), bcrypt.DefaultCost)
 	account.Password = string(hashedPassword)
 
@@ -153,11 +168,13 @@ func CreateUser(account User) (map[string]User, error) {
 		return nil, errors.New("wrong user id")
 	}
 
+	// create the jwt token
 	tk := &Token{UserId: account.ID, Username: account.Email}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
+
 	account.Token = tokenString
-	account.Password = "" //delete password
+	account.Password = "" //delete password, no returned in the response due security reason
 
 	var response = make(map[string]User)
 	response["user"] = account
@@ -165,6 +182,7 @@ func CreateUser(account User) (map[string]User, error) {
 	return response, nil
 }
 
+// login
 func Login(email, password string) (map[string]interface{}, error) {
 
 	account := &User{}
@@ -175,6 +193,7 @@ func Login(email, password string) (map[string]interface{}, error) {
 		return nil, err
 	}
 
+	// verify the password
 	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
 		return nil, err
@@ -183,7 +202,7 @@ func Login(email, password string) (map[string]interface{}, error) {
 	//Worked! Logged In
 	account.Password = ""
 
-	//Create JWT token
+	//Create a new JWT token
 	tk := &Token{UserId: account.ID, Username: account.Email}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))

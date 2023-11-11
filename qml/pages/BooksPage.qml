@@ -3,29 +3,33 @@ import Felgo
 import "../model"
 import "../components"
 
-/*
-
-  profilo
-    back-end
-  */
-
-
+// This page contains the books of the library
 ListPage {
     id: booksPage
-    //showSearch: true
+    title: (libraryDataModel.books.length === 0)? qsTr("Books"): libraryDataModel.books.length + qsTr(" Books")
+
+    // the book selected
     property var selectedBook: ({})
+
+    // the index in the list of the book selected
     property int selectedIndex: -1;
+
+    // The list view is hide when the camera it's use to scan the isbn barcode
+    // Due a problem on android is not possible have the camera in other page
+    // in that case the UI is frozen
     listView.visible: true
+
     rightBarItem: NavigationBarRow {
         // network activity indicator
         ActivityIndicatorBarItem {
+            id: busyIndicator
             enabled: libraryDataModel.isBusy
             visible: enabled && listView.visible
             showItem: showItemAlways // do not collapse into sub-menu on Android
         }
 
         // add new book
-        IconButtonBarItem {
+        IconButtonBarItem { // open the menu to choose how search the book
             iconType: IconType.plus
             showItem: showItemAlways
             visible: listView.visible
@@ -34,13 +38,14 @@ ListPage {
             }
         }
 
-        TextButtonBarItem {
+        TextButtonBarItem { // close the isbn reader
             text: qsTr("Close")
             showItem: showItemAlways
             visible: !listView.visible
             onClicked: {
                 isbnReader.visible = false
                 listView.visible = true
+                isbnReader.run = false
             }
         }
     }
@@ -52,6 +57,9 @@ ListPage {
         BookRow {
             id: bookRow
             item: modelData
+            onSelected: book => {
+                            navigationStack.push(bookComponent, {book: book}) // go to the book details
+                        }
         }
         leftOption: SwipeButton {           //left options, displayed when swiped list row to the right
             text: "Delete"
@@ -59,8 +67,9 @@ ListPage {
             height: bookRow.height
             backgroundColor: "red"
             onClicked: {
-                // TODO confirm and delete
                 container.hideOptions()         //hide automatically when button clicked
+                selectedIndex = index
+                logic.deleteBook(modelData.id)  // delete the book
             }
         }
         rightOption: SwipeButton { //right options, displayed when swiped list row to the left
@@ -70,7 +79,7 @@ ListPage {
             onClicked: {
                 booksPage.selectedBook = modelData
                 booksPage.selectedIndex = index
-                modalNote.open(modelData.note || "")
+                modalNote.open(modelData.note || "") // open the book note
                 container.hideOptions()         //hide automatically when button clicked
             }
         }
@@ -78,14 +87,20 @@ ListPage {
     listView.header: Component {
         SearchBar {
             onEditingFinished: text => {
-                logic.fetchBooks(text)
+                logic.fetchBooks(text) // search books using the text in the search bar
             }
             showDivider: true
             placeHolderText: qsTr("Search by Title, Author, ISBN13")
         }
     }
 
-    ModalMenu {
+    BooksNotFound { // Funny message when the library is empty
+        visible: !busyIndicator.visible && libraryDataModel.books.length === 0
+        text: qsTr("Your library is empty. Add books tapping on +")
+    }
+
+
+    ModalMenu { // Modal menu
         id: modal
         pushBackContent: navigationStack
         menuModel: [qsTr("Scan ISBN-13 with the camera"), qsTr("Insert the ISBN-13")]
@@ -93,6 +108,7 @@ ListPage {
                             if ( index === 0) {
                                 listView.visible = false
                                 isbnReader.visible = true
+                                isbnReader.run = true
 
                             } else {
                                 NativeDialog.inputText(qsTr("Search"), qsTr("Insert the ISBN-13"), "", "", function(ok, text) {
@@ -108,22 +124,24 @@ ListPage {
     ModalNote {
         id: modalNote
         pushBackContent: navigationStack
-        onSave: text => {
+        onSave: text => { // when the save event for the note is generated
                     selectedBook.note = text
                     libraryDataModel.books[selectedIndex] = selectedBook
                     libraryDataModel.booksChanged()
-                    logic.storeBook(selectedBook)
+                    logic.storeBook(selectedBook) //update the book
                 }
     }
 
     ISBNReader {
         id: isbnReader
         visible: false
+        run: false
         anchors.fill: parent
         onIsbnCaptured: barcode => {
-            visible = false
-            listView.visible = true
-            navigationStack.push(searchedBookComponent, {isbn: barcode})
+            visible = false // hide itself
+            listView.visible = true // show the list
+            run = false // stop to scanning
+            navigationStack.push(searchedBookComponent, {isbn: barcode}) // go to the result research page
         }
 
     }
@@ -133,17 +151,23 @@ ListPage {
         id: libraryDataModel
         dispatcher: logic
         onFetchBooksFailed:       error       => NativeUtils.displayMessageBox("Unable to load books", error, 1)
-        onFetchBookDetailsFailed: (error) => NativeUtils.displayMessageBox("Unable to load book " + error, 1)
         onStoreBookFailed:      (error) => NativeUtils.displayMessageBox("Failed to store ", 1)
         onBookStored: book => {
-                          navigationStack.popAllExceptFirst()
-                          logic.fetchBooks("")
+                          navigationStack.popAllExceptFirst() // hide the bookpage
+                          logic.fetchBooks("") // reget the books after the save action
                       }
     }
 
     Component {
         id: searchedBookComponent
         BooksSearchResultPage {
+
+        }
+    }
+
+    Component {
+        id: bookComponent
+        BookPage {
 
         }
     }

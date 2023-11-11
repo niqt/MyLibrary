@@ -29,6 +29,7 @@ Item {
                             var books = []
                             if (data.totalItems > 0) {
                                 for(var i = 0; i < data.items.length; i++) {
+                                    // get only the main information
                                     var book = googleBookToBook(data.items[i])
                                     books.push(book)
                                 }
@@ -42,9 +43,6 @@ Item {
                         })
         }
     }
-
-    // you can place getter functions here that do not modify the data
-    // pages trigger write operations through logic signals only
 
     // rest api for data access
     RestAPI {
@@ -60,6 +58,9 @@ Item {
         property var gBooks: []  // Array
     }
 
+    // Reduce the book information received from google
+    // Get title, subtitle, authors, image, categories, number of pages, publisher
+    // isbn13 and isbn10
     function googleBookToBook(gBook) {
         var info = gBook.volumeInfo
         var book = ({})
@@ -69,7 +70,7 @@ Item {
         for (var j = 0; j < info.authors.length; j++) {
             authors = info.authors[j] + ","
         }
-        // TODO remove finale ,
+        // TODO remove , at the end
         book.authors = authors
         book.publisher = info.publisher
         book.pages = info.pageCount
@@ -77,7 +78,7 @@ Item {
         for (var k = 0; k < info.authors.length; k++) {
             categories = info.categories[k] + ","
         }
-        // TODO remove finale ,
+        // TODO remove , at the end
         for (var l = 0; l < info.industryIdentifiers.length; l++) {
             if (info.industryIdentifiers[l].type === "ISBN_10")
                 book.isbn10 = info.industryIdentifiers[l].identifier

@@ -13,14 +13,11 @@ Item {
     // model data properties
     readonly property alias user: _.user
 
-
     // action success signals
     signal userStored(var user)
     signal login(var user)
     signal registration()
     signal logged()
-
-
 
     // action error signals
     signal loginFailed(var error)

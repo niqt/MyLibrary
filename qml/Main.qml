@@ -23,7 +23,7 @@ App {
         }
         //userStorage.clearAll()
 
-        if (userStorage.getValue("logged") === true)
+        if (userStorage.getValue("logged") === true) // when the app restart if the user is already logged get the books
             logic.fetchBooks("")
     }
 
@@ -36,15 +36,13 @@ App {
         id: userDataModel
         dispatcher: logic
         onLogged: {
-            logic.fetchBooks("")
+            logic.fetchBooks("") // just the user is logget get the books
         }
         onLoginFailed: {
              NativeUtils.displayAlertDialog(qsTr("Login"), qsTr("Check the credentials"), qsTr("OK"))
         }
 
     }
-
-
 
     // helper functions for view
     ViewHelper {
@@ -103,5 +101,4 @@ App {
         id: userStorage
         databaseName: "userStorage"
     }
-
 }

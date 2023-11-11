@@ -3,13 +3,17 @@ import QtQuick
 import QtQuick.Layouts
 import "../components"
 
+/*
+  The login page
+  */
+
 AppPage {
     id: loginPage
     title: qsTr("Login")
 
-    //backgroundColor: Qt.rgba(0,0,0, 0.75) // page background is translucent, we can see other items beneath the page
     useSafeArea: false // do not consider safe area insets of screen
-    BackgroundImage {
+
+    BackgroundImage { // background image for the page
         source: Qt.resolvedUrl("../../assets/eugenio.jpg")
     }
 
@@ -89,7 +93,7 @@ AppPage {
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: {
                     loginPage.forceActiveFocus() // move focus away from text fields
-                    logic.login(txtUsername.text, txtPassword.text)
+                    logic.login(txtUsername.text, txtPassword.text) // login
                 }
             }
 
@@ -100,7 +104,7 @@ AppPage {
                 textColor: "white"
                 onClicked: {
                     loginPage.forceActiveFocus() // move focus away from text fields
-                    modalRegistration.open()
+                    modalRegistration.open() // open the registration modal
                 }
             }
         }
@@ -108,7 +112,7 @@ AppPage {
     ModalRegistration {
         id: modalRegistration
         onRegister: function(email, password) {
-            logic.registration(email, password)
+            logic.registration(email, password) // send the signal to create the user
         }
     }
 

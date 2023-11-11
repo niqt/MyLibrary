@@ -2,16 +2,29 @@ import QtQuick
 import Felgo
 import QtQuick.Layouts
 
+/*
+  This elment contain the form for the registration
+  */
+
 Item {
 
     id: item
-    property bool allFieldsValid: usernameField.isInputCorrect &&  termsOfServiceCheck.checked
+    // This property is true o false depending on if the fields contain valid value
+    property bool allFieldsValid: usernameField.isInputCorrect &&  termsOfServiceCheck.checked && !passwordField.hasError && !repeatPasswordField.hasError
+
+    // this property contains the reference to the Component that opened this modal
+    // it needed to know what show when this modal is closed
+    property alias pushBackContent: modal.pushBackContent
+
+    // This signal is emitted to comunicate the email and the password
     signal register(string email, string password)
 
+    // show this form
     function open() {
         modal.open()
     }
 
+    // hide this form
     function close() {
         modal.close()
     }
@@ -19,7 +32,6 @@ Item {
     AppModal {
         id: modal
         // Set your main content root item
-        pushBackContent: navigationStack
         NavigationStack {
             AppPage {
                 title: qsTr("Registration")
@@ -32,7 +44,7 @@ Item {
                     id: col
                     width: parent.width
                     spacing: 5
-
+                    // all the fields have a margin on the left and the right
                     ValidatedField {
                         id: usernameField
                         Layout.fillWidth: true
@@ -93,6 +105,7 @@ Item {
                         enabled: allFieldsValid
                         Layout.alignment: Qt.AlignHCenter
                         onClicked: {
+                            // emit the signal passing the credentials
                             register(usernameField.textField.text, passwordField.textField.text)
                         }
                     }

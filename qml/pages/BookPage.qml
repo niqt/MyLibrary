@@ -5,10 +5,20 @@ import QtQuick.Layouts
 import "../components"
 import "../model"
 
+/*
+  This page show the information of the book or the empty field if the book it's created manually
+  */
+
 AppPage {
-    title: qsTr("New Book")
+    title: (book.title || "").length === 0 ?qsTr("New Book"): qsTr("Modify book")
+
+    // the book
     property var book: ({})
+
+    // This property verify that at leat the title is inserted, and if the isbn-13 or isbn-10 are present
+    // have the correct field. The isbn can't be present if you are so lucky to have an very old book
     property bool fieldsValid: titleField.hasTitle && !isbn13Field.isbn13Incorrect && !isbn10Field.isbn10Incorrect
+
     rightBarItem: NavigationBarRow {
         // network activity indicator
         ActivityIndicatorBarItem {
@@ -35,6 +45,7 @@ AppPage {
             }
         }
     }
+    // The fields are in a scroll view because a bit long
     ScrollView {
         id: scrollView
         anchors.left: parent.left
@@ -44,6 +55,8 @@ AppPage {
         contentWidth: -1
         contentHeight:col.height
         anchors.bottomMargin: dp(60)
+
+        // the form
         ColumnLayout {
             id: col
             width: scrollView.width

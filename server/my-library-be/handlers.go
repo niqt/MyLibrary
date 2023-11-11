@@ -7,14 +7,17 @@ import (
 	"net/http"
 )
 
+// get the list of the books for the connected user
+// use the search string if present
 func GetBooksEndpoint(w http.ResponseWriter, req *http.Request) {
 	v := req.URL.Query()
 
 	search := v.Get("search")
-
-	json.NewEncoder(w).Encode(GetBooks(search))
+	req.Context().Value("username")
+	json.NewEncoder(w).Encode(GetBooks(search, req.Context().Value("username").(string)))
 }
 
+// get the book by id
 func GetBookByIdEndpoint(w http.ResponseWriter, req *http.Request) {
 	params := mux.Vars(req)
 	id := params["id"]
@@ -22,9 +25,21 @@ func GetBookByIdEndpoint(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(GetBookById(id))
 }
 
+// delete the book by id
+func DeleteBookByIdEndpoint(w http.ResponseWriter, req *http.Request) {
+	params := mux.Vars(req)
+	id := params["id"]
+
+	err := DeleteBookById(id)
+	if err != nil {
+		w.WriteHeader(500) // internal error if it's impossible to delete
+	}
+	json.NewEncoder(w)
+}
+
+// save the book
 func SaveBookEndpoint(w http.ResponseWriter, req *http.Request) {
 	var book Book
-	//err := json.NewDecoder(req.Body).Decode(&bb)
 
 	var bodyBytes []byte
 	if req.Body != nil {
@@ -33,17 +48,18 @@ func SaveBookEndpoint(w http.ResponseWriter, req *http.Request) {
 	err := json.Unmarshal(bodyBytes, &book)
 
 	if err != nil {
-		//util.Log.Error().Msg("Error: " + err.Error())
+		w.WriteHeader(500) // internal error if it's impossible decode the book
+		return
 	}
-
+	book.User = req.Context().Value("username").(string)
 	result := SaveBook(book)
 
 	json.NewEncoder(w).Encode(result)
 }
 
+// create the user
 func CreateUserEndpoint(w http.ResponseWriter, req *http.Request) {
 	var user User
-	//err := json.NewDecoder(req.Body).Decode(&bb)
 
 	var bodyBytes []byte
 	if req.Body != nil {
@@ -52,18 +68,21 @@ func CreateUserEndpoint(w http.ResponseWriter, req *http.Request) {
 	err := json.Unmarshal(bodyBytes, &user)
 
 	if err != nil {
-		//util.Log.Error().Msg("Error: " + err.Error())
+		w.WriteHeader(500) // internal error if it's impossible decode the user
+		return
 	}
 
 	result, err := CreateUser(user)
 
 	if err != nil {
 		w.WriteHeader(500)
+		return
 	}
 
 	json.NewEncoder(w).Encode(result)
 }
 
+// login
 func AuthenticateUserEndpoint(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	account := &User{}
