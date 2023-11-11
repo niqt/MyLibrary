@@ -19,7 +19,7 @@ Item {
     QtObject {
         id: _
         // url to the my-library server
-        property string myBookServer: "http://192.168.0.112:8080/api/v1"
+        property string myBookServer: "http://192.168.0.172:8080/api/v1"
 
         // url for the crud operation
         property string booksUrl: myBookServer + "/books"

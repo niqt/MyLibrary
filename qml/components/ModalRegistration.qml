@@ -106,7 +106,7 @@ Item {
                         Layout.alignment: Qt.AlignHCenter
                         onClicked: {
                             // emit the signal passing the credentials
-                            register(usernameField.textField.text, passwordField.textField.text)
+                            register(usernameField.textField.text.toLocaleLowerCase(), passwordField.textField.text)
                         }
                     }
                 }

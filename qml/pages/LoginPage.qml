@@ -93,7 +93,7 @@ AppPage {
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked: {
                     loginPage.forceActiveFocus() // move focus away from text fields
-                    logic.login(txtUsername.text, txtPassword.text) // login
+                    logic.login(txtUsername.text.toLowerCase(), txtPassword.text) // login
                 }
             }
 
@@ -120,7 +120,7 @@ AppPage {
         target: userDataModel
         enabled: loginPage.visible
         onRegistration: {
-            NativeUtils.displayAlertDialog(qsTr("Registration"), qsTr("Registered! Don't forget the password at the moment it's impossible to reset\nPlease sign-in"))
+            NativeUtils.displayMessageBox(qsTr("Registration"), qsTr("Congratulations, Registered! Don't forget the password"))
             modalRegistration.close()
         }
         onRegistrationFailed: {
